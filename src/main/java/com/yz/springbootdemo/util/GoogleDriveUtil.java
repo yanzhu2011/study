@@ -40,6 +40,7 @@ public class GoogleDriveUtil {
 
     // Google Drive 校验码 【注意：不用每次点击链接授权】
     private static final String authorizationAccessToken = "ya29.a0AfH6SMClGv_Bzf-9iGaBxk_VA85Vg-QAd7PqxDWhpZnH4usY5jQx218WcVcw2v49RHHlfBbpGyVn_VxMsz3vOxvmI2ofg9uXgVBZ9MPkHNhwIfZSAmxIIwe4_IJTZdPEdbdNc-L1aykPN2Dv--Tekd12c0BndA1wVZk";
+    private static final String authorizationRefreshToken = "1//0eliBFADrT9JJCgYIARAAGA4SNwF-L9IrMSrE_I3arpSpH86Dr0492b8bgXIPv2p25wLdLvttY9Xv5nSZ1oWFKnakUZbILF74c_I";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -71,7 +72,7 @@ public class GoogleDriveUtil {
             final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
             service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).setApplicationName(APPLICATION_NAME).build();
         } catch (Exception e) {
-            LOGGER.error("GoogleDriveApi3Util.Drive.Builder异常，e=%s", e);
+            LOGGER.error("GoogleDriveUtil.Drive.Builder异常", e);
         }
     }
 
@@ -83,7 +84,7 @@ public class GoogleDriveUtil {
      */
     private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GoogleDriveApi3Util.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = GoogleDriveUtil.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -95,7 +96,7 @@ public class GoogleDriveUtil {
                 .setAccessType("offline").build();
 
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
-        return new AuthorizationCodeInstalledAppUtil(flow, receiver).authorize("user");
+        return new AuthorizationCodeInstalledAppUtil(flow, receiver).authorize("user", authorizationAccessToken, authorizationRefreshToken);
     }
 
     /**
@@ -128,7 +129,7 @@ public class GoogleDriveUtil {
             res.put("content", content);
             return res;
         } catch (Exception e) {
-            LOGGER.error("GoogleDriveApi3Util.covertDoc2Html异常，e=%s", e);
+            LOGGER.error("GoogleDriveUtil.covertDoc2Html异常", e);
         }
         return res;
     }

@@ -19,13 +19,10 @@ public class AuthorizationCodeInstalledAppUtil extends AuthorizationCodeInstalle
         super(flow, receiver);
     }
 
-    public Credential authorize(String userId, String accessToken) throws IOException {
-        Credential credential = this.getFlow().loadCredential(userId);
-        if (credential != null && (credential.getRefreshToken() != null || credential.getExpiresInSeconds() == null || credential.getExpiresInSeconds() > 60L)) {
-            return credential;
-        }
+    public Credential authorize(String userId, String accessToken, String authorizationRefreshToken) throws IOException {
         TokenResponse response = new TokenResponse();
         response.setAccessToken(accessToken);
+        response.setRefreshToken(authorizationRefreshToken);
         response.setExpiresInSeconds(3599L);
         response.setScope("https://www.googleapis.com/auth/drive");
         response.setTokenType("Bearer");
