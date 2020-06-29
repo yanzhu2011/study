@@ -50,8 +50,8 @@ public class GoogleDriveUtil {
     private static final List<String> SCOPES = Collections.singletonList(DriveScopes.DRIVE);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
 
-    // 构建driver
-    private Drive service;
+    // 构建NetHttpTransport
+    private NetHttpTransport HTTP_TRANSPORT;
 
     private static volatile GoogleDriveUtil instance = null;
 
@@ -69,8 +69,7 @@ public class GoogleDriveUtil {
     public GoogleDriveUtil() {
         try {
             // Build a new authorized API client service.
-            final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-            service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).setApplicationName(APPLICATION_NAME).build();
+            HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         } catch (Exception e) {
             LOGGER.error("GoogleDriveUtil.Drive.Builder异常", e);
         }
@@ -108,14 +107,13 @@ public class GoogleDriveUtil {
     public Map<String, String> covertDoc2Html(java.io.File uploadFile, String fileId) {
         Map<String, String> res = new HashMap<String, String>();
         try {
+            Drive service = new Drive.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT)).setApplicationName(APPLICATION_NAME).build();
             if (StringUtils.isBlank(fileId)) {
                 // 上传文件
                 File fileMetadata = new File();
                 fileMetadata.setMimeType(MINE_TYPE);
                 FileContent mediaContent = new FileContent(CONTENT_TYPE, uploadFile);
                 File file = service.files().create(fileMetadata, mediaContent).setFields("id").execute();
-                // 删除原始文件
-                // TODO 不删除  FileUtil.deleteFile(uploadFile);
                 // 获取上传文件ID，并加入缓存
                 fileId = file.getId();
                 res.put("fileId", fileId);
@@ -130,6 +128,9 @@ public class GoogleDriveUtil {
             return res;
         } catch (Exception e) {
             LOGGER.error("GoogleDriveUtil.covertDoc2Html异常", e);
+        } finally {
+            // 删除原始文件
+            // TODO 不删除  FileUtil.deleteFile(uploadFile);
         }
         return res;
     }

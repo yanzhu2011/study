@@ -4,6 +4,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author yanzhu
@@ -11,7 +13,8 @@ import java.net.URLDecoder;
  * @description
  */
 public class FileUtil {
-
+    // MS Word/Excel (xls.or.doc/docx)，文件头
+    private static List<String> wordFileHeads = Arrays.asList("D0CF11", "504B03");
     /**
      * 文件读取
      * @param filePath
@@ -121,10 +124,53 @@ public class FileUtil {
         }
     }
 
+    /**
+     * 获取文件头
+     * @param src
+     * @return
+     */
+    public static String bytesToHexString(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (src == null || src.length <= 0) {
+            return "";
+        }
+        for (int i = 0; i < src.length; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * 判断是否word：根据文件头
+     * @param file
+     * @return
+     */
+    public static boolean isWord(File file) {
+        try {
+            FileInputStream is = new FileInputStream(file);
+            byte[] b = new byte[3];
+            is.read(b, 0, b.length);
+            String fileHead = bytesToHexString(b).toUpperCase();
+            System.out.println("fileHead:" + fileHead);
+            return wordFileHeads.contains(fileHead);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
-        String name = "一年级下册数学试题-周周练4（无答案）人教版.doc";
-        String content = FileUtil.readFileContent(String.format("/Users/yanzhu/Downloads/其他/转换/%s.html", name));
-        FileUtil.writeFile(String.format("/Users/yanzhu/Downloads/其他/转换/%s-2.html", name), content);
+        String name = "test.sql";
+        name = String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name);
+        //String content = FileUtil.readFileContent(name);
+        // FileUtil.writeFile(String.format("/Users/yanzhu/Downloads/其他/转换/%s-2.html", name), content);
+        File f = new File(name);
+        System.out.println("isWord:" + isWord(f));
     }
 }
 
