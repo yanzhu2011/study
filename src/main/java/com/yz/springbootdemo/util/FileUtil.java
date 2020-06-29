@@ -3,9 +3,20 @@ package com.yz.springbootdemo.util;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.net.URLDecoder;
 
+/**
+ * @author yanzhu
+ * @date 2020/6/23
+ * @description
+ */
 public class FileUtil {
 
+    /**
+     * 文件读取
+     * @param filePath
+     * @return
+     */
     public static String readFileContent(String filePath) {
         BufferedReader br = null;
         String res = "";
@@ -38,7 +49,11 @@ public class FileUtil {
         return res;
     }
 
-    //写回文件
+    /**
+     * 文件写入
+     * @param filePath
+     * @param content
+     */
     public static void writeFile(String filePath, String content) {
         BufferedWriter bw = null;
         try {
@@ -57,7 +72,13 @@ public class FileUtil {
         }
     }
 
-    public static String unicode2String(String str) {
+    /**
+     * unicode字符处理
+     * @param str
+     * @return
+     * @throws UnsupportedEncodingException
+     */
+    public static String unicode2String(String str) throws UnsupportedEncodingException {
         String[] unicodeArr = str.split(";");
         StringBuffer string = new StringBuffer();
         for (String unicode : unicodeArr) {
@@ -79,9 +100,26 @@ public class FileUtil {
                 string.append(";");
             }
         }
-        return string.toString();
+        // 特殊处理
+        String result = string.toString();
+        // 解决问题：URLDecoder: Illegal hex characters in escape (%) pattern - For input string: "&#"
+        result = result.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
+        result = result.replaceAll("\\+", "%2B");
+        // 转码
+        result = URLDecoder.decode(result, "utf-8");
+        result = result.replaceAll("&amp;","&");
+        return result;
     }
 
+    /**
+     * 删除文件
+     * @param file
+     */
+    public static void deleteFile(File file) {
+        if (file != null && file.exists()) {
+            file.delete();
+        }
+    }
 
     public static void main(String[] args) {
         String name = "一年级下册数学试题-周周练4（无答案）人教版.doc";

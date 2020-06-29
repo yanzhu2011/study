@@ -21,6 +21,7 @@ import java.io.*;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class GoogleDriveApi3Util {
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
@@ -88,33 +89,71 @@ public class GoogleDriveApi3Util {
         }
     }
 
-    public void covertDoc2Html() {
+    /**
+     * word转html-指定本地文件位置
+     * @param uploadFile
+     * @return
+     */
+    public String covertDoc2Html(java.io.File uploadFile) {
         try {
             // 上传文件
             File fileMetadata = new File();
-            fileMetadata.setMimeType("application/vnd.google-apps.document");
-            String name = "江苏省江都中学2019-2020学年下学期高一数学周练试卷2020.3.22（无答案）.docx";
-            java.io.File filePath = new java.io.File(String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name));
-            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.wordprocessingml.document", filePath);
+            fileMetadata.setMimeType("application/vnd.google-apps.file");
+            // doc
+            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.wordprocessingml.document", uploadFile);
+            // 富文本 FileContent mediaContent = new FileContent("application/msword", filePath);
             File file = service.files().create(fileMetadata, mediaContent).setFields("id").execute();
-            System.out.println("File ID: " + file.getId());
+            System.out.println("File ID: " + file.getId());//14lLjnWN9bWDs58sS-ec7JQBHIvoBX-w2xIw_Z5fA194
             // 下载文件
-            String fp = String.format("/Users/yanzhu/Downloads/其他/转换/%s.html", name);
+            String fp = String.format("/Users/yanzhu/Downloads/其他/转换/%s-2.html", uploadFile.getName());
+            //String path = System.getProperty("user.dir") + "tmp";
+            //String fp = String.format("%s/%s-covert.html", path, uploadFile.getName());
             OutputStream outputStream = new FileOutputStream(fp);
             //OutputStream outputStream = new ByteArrayOutputStream();
             service.files().export(file.getId(), "text/html").executeMediaAndDownloadTo(outputStream);
 
+            // FileUtil.writeFile(fp, content);
             // 修改文件内容
             String content = FileUtil.readFileContent(fp);
-            FileUtil.writeFile(fp, content);
+            // 删除文件：使用完后删除
+            //FileUtil.deleteFile(fp);
+            return content;
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return "";
+    }
+
+    /**
+     * word转html-不在本地生成文件
+     * @param uploadFile
+     * @return
+     */
+    public String covertDoc2Html2(java.io.File uploadFile) {
+        try {
+            // 上传文件
+            File fileMetadata = new File();
+            fileMetadata.setMimeType("application/vnd.google-apps.file");
+            // doc
+            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.wordprocessingml.document", uploadFile);
+            File file = service.files().create(fileMetadata, mediaContent).setFields("id").execute();
+            // 下载文件
+            OutputStream outputStream = new ByteArrayOutputStream();
+            service.files().export(file.getId(), "text/html").executeMediaAndDownloadTo(outputStream);
+            String content = outputStream.toString();
+            // unicode字符处理
+            content = FileUtil.unicode2String(content);
+            return content;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public static void main(String... args) throws Exception {
         GoogleDriveApi3Util util = new GoogleDriveApi3Util();
-        util.covertDoc2Html();
-        //util.getFiles();
+        String name = "语文4.doc";
+        java.io.File uploadFile = new java.io.File(String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name));
+        System.out.println(util.covertDoc2Html(uploadFile));
     }
 }
