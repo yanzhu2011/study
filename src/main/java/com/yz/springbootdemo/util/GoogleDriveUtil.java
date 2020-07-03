@@ -4,6 +4,7 @@ import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -41,6 +42,8 @@ public class GoogleDriveUtil {
     // Google Drive 校验码 【注意：不用每次点击链接授权】
     private static final String authorizationAccessToken = "ya29.a0AfH6SMClGv_Bzf-9iGaBxk_VA85Vg-QAd7PqxDWhpZnH4usY5jQx218WcVcw2v49RHHlfBbpGyVn_VxMsz3vOxvmI2ofg9uXgVBZ9MPkHNhwIfZSAmxIIwe4_IJTZdPEdbdNc-L1aykPN2Dv--Tekd12c0BndA1wVZk";
     private static final String authorizationRefreshToken = "1//0eliBFADrT9JJCgYIARAAGA4SNwF-L9IrMSrE_I3arpSpH86Dr0492b8bgXIPv2p25wLdLvttY9Xv5nSZ1oWFKnakUZbILF74c_I";
+    private static final String clientId = "867569619412-gqjnujbemcmk9vlrav61ulna70u3mll0.apps.googleusercontent.com";
+    private static final String clientSecret = "yPMJ4mjCSxcDOw3JlMjH5KN6";
 
     /**
      * Global instance of the scopes required by this quickstart.
@@ -81,7 +84,8 @@ public class GoogleDriveUtil {
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
      */
-    private Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+    @Deprecated
+    private Credential getCredentials1(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
         InputStream in = GoogleDriveUtil.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
@@ -93,9 +97,28 @@ public class GoogleDriveUtil {
         GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
                 .setDataStoreFactory(new FileDataStoreFactory(new java.io.File(TOKENS_DIRECTORY_PATH)))
                 .setAccessType("offline").build();
-
         LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8888).build();
+
+        // 【授权方式1】TODO 需要服务器点击授权链接跳转授权
+        // return new AuthorizationCodeInstalledAppUtil(flow, receiver).authorize("user");
+
+        // 【授权方式2】TODO 配置AccessToken+RefreshToken {生成环境报错：Caused by: java.security.cert.CertificateException: No name matching www.googleapis.com found}
         return new AuthorizationCodeInstalledAppUtil(flow, receiver).authorize("user", authorizationAccessToken, authorizationRefreshToken);
+    }
+
+    /**
+     * 【授权方式3】TODO 不用token方式
+     *  {生成环境报错：Caused by: java.security.cert.CertificateException: No name matching www.googleapis.com found}
+     * @param HTTP_TRANSPORT
+     * @return
+     * @throws IOException
+     */
+    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
+        // GoogleCredential.Builder
+       return new GoogleCredential.Builder()
+                .setClientSecrets(clientId, clientSecret)
+                .setJsonFactory(JSON_FACTORY).setTransport(HTTP_TRANSPORT).build()
+                .setAccessToken(authorizationAccessToken).setRefreshToken(authorizationRefreshToken);
     }
 
     /**
