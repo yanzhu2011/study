@@ -1,4 +1,4 @@
-package com.yz.springbootdemo.util;
+package com.yz.springbootdemo.util.test;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeFlow;
 import com.google.api.client.auth.oauth2.Credential;
@@ -13,6 +13,7 @@ import java.io.IOException;
  * @date 2020/6/29
  * @description
  */
+@Deprecated
 public class AuthorizationCodeInstalledAppUtil extends AuthorizationCodeInstalledApp {
 
     public AuthorizationCodeInstalledAppUtil(AuthorizationCodeFlow flow, VerificationCodeReceiver receiver) {

@@ -13,8 +13,10 @@ import java.util.List;
  * @description
  */
 public class FileUtil {
+
     // MS Word/Excel (xls.or.doc/docx)，文件头
     private static List<String> wordFileHeads = Arrays.asList("D0CF11", "504B03");
+
     /**
      * 文件读取
      * @param filePath
@@ -35,7 +37,7 @@ public class FileUtil {
             res = bufAll.toString();
             // 特殊处理：最后一个字符为";"，需要剔除
             String last = res.substring(res.length()-1, res.length());
-            if (StringUtils.isNoneBlank(res) && ";".equals(res.substring(res.length()-1, res.length()))) {
+            if (StringUtils.isNoneBlank(res) && ";".equals(last)) {
                 res = res.substring(0,res.length()-1);
             }
         } catch (Exception e) {
@@ -111,6 +113,11 @@ public class FileUtil {
         // 转码
         result = URLDecoder.decode(result, "utf-8");
         result = result.replaceAll("&amp;","&");
+        // 特殊处理：最后一个字符为";"，需要剔除
+        String last = result.substring(result.length() - 1, result.length());
+        if (";".equals(last)) {
+            result = result.substring(0, result.length() - 1);
+        }
         return result;
     }
 
@@ -156,21 +163,11 @@ public class FileUtil {
             byte[] b = new byte[3];
             is.read(b, 0, b.length);
             String fileHead = bytesToHexString(b).toUpperCase();
-            System.out.println("fileHead:" + fileHead);
             return wordFileHeads.contains(fileHead);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public static void main(String[] args) {
-        String name = "test.sql";
-        name = String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name);
-        //String content = FileUtil.readFileContent(name);
-        // FileUtil.writeFile(String.format("/Users/yanzhu/Downloads/其他/转换/%s-2.html", name), content);
-        File f = new File(name);
-        System.out.println("isWord:" + isWord(f));
     }
 }
 

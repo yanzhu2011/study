@@ -1,4 +1,4 @@
-package com.yz.springbootdemo.util;
+package com.yz.springbootdemo.util.test;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
@@ -14,6 +14,7 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
+import com.yz.springbootdemo.util.FileUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,8 +30,9 @@ import java.util.Map;
  * @date 2020/6/29
  * @description
  */
-public class GoogleDriveUtil {
-    private Logger LOGGER = LoggerFactory.getLogger(GoogleDriveUtil.class);
+@Deprecated
+public class GoogleDriveUtilTest {
+    private Logger LOGGER = LoggerFactory.getLogger(GoogleDriveUtilTest.class);
     private static final String APPLICATION_NAME = "Google Drive API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -56,20 +58,20 @@ public class GoogleDriveUtil {
     // 构建NetHttpTransport
     private NetHttpTransport HTTP_TRANSPORT;
 
-    private static volatile GoogleDriveUtil instance = null;
+    private static volatile GoogleDriveUtilTest instance = null;
 
-    public static GoogleDriveUtil getInstance(){
+    public static GoogleDriveUtilTest getInstance(){
         if(instance == null){
-            synchronized (GoogleDriveUtil.class) {
+            synchronized (GoogleDriveUtilTest.class) {
                 if(instance == null) {
-                    instance = new GoogleDriveUtil();
+                    instance = new GoogleDriveUtilTest();
                 }
             }
         }
         return instance;
     }
 
-    public GoogleDriveUtil() {
+    public GoogleDriveUtilTest() {
         try {
             // Build a new authorized API client service.
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
@@ -87,7 +89,7 @@ public class GoogleDriveUtil {
     @Deprecated
     private Credential getCredentials1(final NetHttpTransport HTTP_TRANSPORT) throws IOException {
         // Load client secrets.
-        InputStream in = GoogleDriveUtil.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
+        InputStream in = GoogleDriveUtilTest.class.getResourceAsStream(CREDENTIALS_FILE_PATH);
         if (in == null) {
             throw new FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH);
         }
@@ -135,6 +137,7 @@ public class GoogleDriveUtil {
                 // 上传文件
                 File fileMetadata = new File();
                 fileMetadata.setMimeType(MINE_TYPE);
+                // test String CONTENT_TYPE = "application/vnd.oasis.opendocument.text";
                 FileContent mediaContent = new FileContent(CONTENT_TYPE, uploadFile);
                 File file = service.files().create(fileMetadata, mediaContent).setFields("id").execute();
                 // 获取上传文件ID，并加入缓存
@@ -143,10 +146,16 @@ public class GoogleDriveUtil {
             }
             // 下载文件
             OutputStream outputStream = new ByteArrayOutputStream();
+            String path = "/Users/yanzhu/Downloads/其他/转换对比/google-%s.html";
+            // test path = "/Users/yanzhu/Downloads/其他/转换对比/google-%s.zip";
+            String fp = String.format(path, uploadFile.getName());
+            // test OutputStream outputStream = new FileOutputStream(fp);
+            // test String HTML_TYPE = "application/zip";
             service.files().export(fileId, HTML_TYPE).executeMediaAndDownloadTo(outputStream);
             String content = outputStream.toString();
             // unicode字符处理
             content = FileUtil.unicode2String(content);
+            System.out.println(content);
             res.put("content", content);
             return res;
         } catch (Exception e) {
@@ -159,10 +168,10 @@ public class GoogleDriveUtil {
     }
 
     public static void main(String[] args) {
-        String name = "人教版初中英语9年级全册 unit 9  单元检测试卷（含答案）.docx";
-        name = String.format("/Users/yanzhu/Downloads/其他/原文件/%s", name);
+        String name = "高中数学试卷2020年05月07日.docx";
+        name = String.format("/Users/yanzhu/Downloads/其他/1/%s", name);
         java.io.File uploadFile = new java.io.File(name);
-        Map res = GoogleDriveUtil.getInstance().covertDoc2Html(uploadFile, null);
+        Map res = GoogleDriveUtilTest.getInstance().covertDoc2Html(uploadFile, null);
         System.out.println(res);
     }
 }
